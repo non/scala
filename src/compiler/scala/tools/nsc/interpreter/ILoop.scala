@@ -253,13 +253,14 @@ class ILoop(in0: Option[BufferedReader], protected val out: JPrintWriter)
   /** Standard commands **/
   lazy val standardCommands = List(
     cmd("cp", "<path>", "add a jar or directory to the classpath", addClasspath),
+    cmd("file", "<path>", "load and compile Scala file", fileCommand),
     cmd("help", "[command]", "print this summary or command-specific help", helpCommand),
     historyCommand,
     cmd("h?", "<string>", "search the history", searchHistory),
     cmd("imports", "[name name ...]", "show import history, identifying sources of names", importsCommand),
     cmd("implicits", "[-v]", "show the implicits in scope", implicitsCommand),
     cmd("javap", "<path|class>", "disassemble a file or class name", javapCommand),
-    cmd("load", "<path>", "load and interpret a Scala file", loadCommand),
+    cmd("load", "<path>", "load and interpret a saved session", loadCommand),
     nullary("paste", "enter paste mode: all input up to ctrl-D compiled together", pasteCommand),
     nullary("power", "enable power user mode", powerCmd),
     nullary("quit", "exit the interpreter", () => Result(false, None)),
@@ -646,6 +647,22 @@ class ILoop(in0: Option[BufferedReader], protected val out: JPrintWriter)
       shouldReplay = Some(":load " + arg)
     })
     Result(true, shouldReplay)
+  }
+
+  def fileCommand(arg: String) = {
+    val code = withFile(arg) {
+      _ applyReader {
+        reader =>
+        val sb = new StringBuilder
+        var line = reader.readLine
+        while (line != null) {
+          sb.append(line + "\n")
+          line = reader.readLine
+        }
+        intp interpret sb.toString
+      }
+    }
+    ()
   }
 
   def addClasspath(arg: String): Unit = {
