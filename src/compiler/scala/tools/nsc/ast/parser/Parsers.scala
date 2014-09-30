@@ -572,10 +572,8 @@ self =>
     }
 
     def expectedMsgTemplate(exp: String, fnd: String) = s"$exp expected but $fnd found."
-    def expectedMsg(token: Token): String = {
-      new Exception("ruh roh").printStackTrace()
+    def expectedMsg(token: Token): String =
       expectedMsgTemplate(token2string(token), token2string(in.token))
-    }
 
     /** Consume one token of the specified type, or signal an error if it is not there. */
     def accept(token: Token): Offset = {
@@ -946,7 +944,13 @@ self =>
           case LBRACKET =>
             atPos(start) {
               val ts = typeParamClauseOpt(freshTypeName("typelambda"), null)
-              makeTypeLambdaTypeTree(ts, typ())
+              if (in.token == ARROW) {
+                in.skipToken()
+                makeTypeLambdaTypeTree(ts, typ())
+              } else {
+                syntaxError("`=>' expected", skipIt = false)
+                EmptyTree
+              }
             }
           case USCORE =>
             wildcardType(in.skipToken())
