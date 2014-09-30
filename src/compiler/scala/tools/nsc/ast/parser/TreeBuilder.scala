@@ -153,6 +153,42 @@ abstract class TreeBuilder {
   /** Create a tree representing the function type (argtpes) => restpe */
   def makeFunctionTypeTree(argtpes: List[Tree], restpe: Tree): Tree = gen.mkFunctionTypeTree(argtpes, restpe)
 
+  /** Create a type lambda tree */
+  //def makeTypeLambdaTypeTree(argtpes: List[Tree], restpe: Tree): Tree = {
+  def makeTypeLambdaTypeTree(argtpes: List[TypeDef], restpe: Tree): Tree = {
+    println("args are:")
+    argtpes.foreach { (t: Tree) => println(t) }
+    println("result is:")
+    println(restpe)
+
+    def rssi(b: String, c: String) =
+      Select(Select(Ident("_root_"), b), newTypeName(c))
+
+    def bounds =
+      TypeBoundsTree(rssi("scala", "Nothing"), rssi("scala", "Any"))
+
+    // val args: List[TypeDef] = argtpes.map {
+    //   case Ident(name) => TypeDef(Modifiers(PARAM), newTypeName(name.toString), Nil, bounds) // ugh
+    //   //case ? => TypeDef(Modifiers(PARAM | COVARIANT), name, Nil, bounds)
+    //   //case ? => TypeDef(Modifiers(PARAM | CONTRAVARIANT), name, Nil, bounds)
+    //   //case ? => ???
+    //   case t => sys.error("sorry: $t")
+    // }
+
+    SelectFromTypeTree(
+      CompoundTypeTree(
+        Template(
+          Select(Select(Ident("_root_"), "scala"), newTypeName("AnyRef")) :: Nil,
+          ValDef(Modifiers(0), "_", TypeTree(), EmptyTree),
+          TypeDef(
+            Modifiers(0),
+            newTypeName("L"),
+            //args,
+            argtpes,
+            restpe) :: Nil)),
+      newTypeName("L"))
+  }
+
   /** Append implicit parameter section if `contextBounds` nonempty */
   def addEvidenceParams(owner: Name, vparamss: List[List[ValDef]], contextBounds: List[Tree]): List[List[ValDef]] = {
     if (contextBounds.isEmpty) vparamss
