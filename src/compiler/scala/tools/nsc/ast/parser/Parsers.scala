@@ -949,7 +949,7 @@ self =>
                 makeTypeLambdaTypeTree(ts, typ())
               } else {
                 syntaxError("`=>' expected", skipIt = false)
-                EmptyTree
+                errorTypeTree
               }
             }
           case USCORE =>
