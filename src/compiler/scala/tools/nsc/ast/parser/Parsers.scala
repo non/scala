@@ -941,23 +941,16 @@ self =>
       def simpleType(): Tree = {
         val start = in.offset
         simpleTypeRest(in.token match {
-          case LPAREN   => atPos(start)(makeTupleType(inParens(types())))
+          case LPAREN =>
+            atPos(start)(makeTupleType(inParens(types())))
           case LBRACKET =>
             atPos(start) {
-              val parent = freshTypeName("_$typelambda")
-              val ts = typeParamClauseOpt(parent, null)
-              if (in.token == ARROW) {
-                in.skipToken()
-                makeTypeLambdaTypeTree(ts, typ())
-              } else {
-                println(in.token)
-                syntaxError(start, "wtf dude? ${in.token}", skipIt = false)
-                ???
-              }
+              val ts = typeParamClauseOpt(freshTypeName("typelambda"), null)
+              makeTypeLambdaTypeTree(ts, typ())
             }
-
-          case USCORE   => wildcardType(in.skipToken())
-          case _        =>
+          case USCORE =>
+            wildcardType(in.skipToken())
+          case _ =>
             path(thisOK = false, typeOK = true) match {
               case r @ SingletonTypeTree(_) => r
               case r => convertToTypeId(r)
