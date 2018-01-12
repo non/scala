@@ -4,12 +4,14 @@ object nullable {
   opaque type Nullable[A <: AnyRef] = A
 
   object Nullable {
+    // should be available in this scope automatically
+
     private implicit def toNullable[A <: AnyRef](a: A): Nullable[A] = a.asInstanceOf[Nullable[A]]
     private implicit def fromNullable[A <: AnyRef](a: Nullable[A]): A = a.asInstanceOf[A]
 
     def apply[A <: AnyRef](a: A): Nullable[A] = a
 
-    implicit class NullableOps[A <: AnyRef](na: Nullable[A]) {
+    implicit class NullableOps[A <: AnyRef](val na: Nullable[A]) extends AnyVal {
       def exists(p: A => Boolean): Boolean =
         na != null && p(na)
       def filter(p: A => Boolean): Nullable[A] =

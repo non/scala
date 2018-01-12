@@ -3,5 +3,6 @@ object Test {
     opaquetypes.run()
     nullable.run()
     union.run()
+    tagging.run()
   }
 }
